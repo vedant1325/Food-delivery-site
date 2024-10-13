@@ -1,0 +1,106 @@
+//User Route
+import express from "express"
+import { loginUser,register } from "../controllers/UserController.js"
+
+
+const userRouter=express.Router();
+
+userRouter.post("/register",register);
+userRouter.post("/login",loginUser);
+
+export default userRouter;
+
+//UserController
+import userModel from "../models/UserModel";
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
+import validator from "validator"
+
+//Login User
+
+const loginUser=async(req,res)=>{
+
+}
+
+
+
+
+const createToken=(id)=>{
+ return jwt.sign({id},process.env.JWT_SECRET)
+}
+
+//register user
+
+const register=async(req,res)=>{
+
+    const {name,email,password}=req.body;
+
+    try {
+        //checking if user already exists
+        const exists=await userModel.find({email});
+
+        if(exists){
+            return res.json({success:false,message:"User Already exists"})
+        }
+
+        //validating email format and strong password
+        if(!validator.isEmail(email)){
+            return res.json({success:false,message:"Please enter valid email "});
+        }
+
+        if(password.length<8){
+            return res.json({success:false,message:"Please enter strong password of minimum length of 8"});
+        }
+
+        //hashing user password
+        const salt=await bcrypt.genSalt(10);
+        const hashedPassword=await bcrypt.hash(password,salt);
+
+        const newUser=new userModel({
+                name:name,
+                email:email,
+                password:hashedPassword
+
+        });
+
+       const user= await newUser.save();
+       const token=createToken(user._id);
+       res.json({success:true,token})
+         
+    } catch (error) {
+        console.log(error);
+        res.json({success:false,message:"Error"})
+    }
+
+
+}
+export{loginUser,register}
+
+//UserModel
+
+ /*import mongoose from "mongoose";
+
+ const userSchema=new mongoose.Schema({
+    name:{
+        type:String,
+        required:true
+    },
+    email:{
+        type:String,
+        required:true,
+        unique:true
+    },
+    password:{
+        type:String,
+        required:true
+    },
+    cartData:{
+        type:Object,
+        default:{}
+
+    }
+ },{minimize:false});
+
+ const userModel= mongoose.model.user ||mongoose.model("user",userSchema);
+
+ export default userModel;*/
