@@ -18,4 +18,4 @@ export const assets ={
     menubook
 }
 
-export const url = 'http://localhost:4000'
+export const url = 'https://food-delivery-site-backend.onrender.com'
